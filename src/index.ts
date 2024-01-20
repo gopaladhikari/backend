@@ -3,6 +3,8 @@ import { connectDb } from "./db/index.js";
 
 const { PORT } = process.env;
 
-connectDb().then(() => {
-  app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
-});
+connectDb()
+  .then(() => {
+    app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+  })
+  .catch((error) => console.log(error));
