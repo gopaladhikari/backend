@@ -3,7 +3,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { dbHandler } from "../utils/dbHandler.js";
 import { registerSchema } from "../schema/register.schema.js";
-import { RegisterUser } from "./controller.js";
+import { LoginUser, RegisterUser } from "./controller.js";
+import { loginSchema } from "../schema/login.schema.js";
 
 const options = {
   httpOnly: true,
@@ -25,9 +26,16 @@ const generateAccessAndRefreshToken = async (id: string) => {
 const registerUser = dbHandler(async (req, res) => {
   const userData: RegisterUser = req.body;
 
-  const validate = registerSchema.safeParse(userData).success;
+  const result = registerSchema.safeParse(userData);
 
-  if (!validate) throw new ApiError(400, "All field are required");
+  if (result.success === false) {
+    const errors = result.error.issues.map((issue) => ({
+      field: issue.path.join("."),
+      message: issue.message,
+    }));
+
+    throw new ApiError(400, "Validation Error", errors);
+  }
 
   const existedUser = await User.findOne({ email: userData.email });
 
@@ -46,14 +54,25 @@ const registerUser = dbHandler(async (req, res) => {
 });
 
 const loginUser = dbHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const credential: LoginUser = req.body;
 
-  if (!email || !password) throw new ApiError(400, "All field are required");
+  const result = loginSchema.safeParse(credential);
 
-  const existedUser = await User.findOne({ email });
+  if (result.success === false) {
+    const errors = result.error.issues.map((issue) => ({
+      field: issue.path.join("."),
+      message: issue.message,
+    }));
+
+    throw new ApiError(400, "Validation Error", errors);
+  }
+
+  const existedUser = await User.findOne({ email: credential.email });
   if (!existedUser) throw new ApiError(400, "User not found");
 
-  const isPasswordCorrect = await existedUser.isPasswordCorrect(password);
+  const isPasswordCorrect = await existedUser.isPasswordCorrect(
+    credential.password
+  );
   if (!isPasswordCorrect) throw new ApiError(400, "Incorrect password");
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(

@@ -1,10 +1,17 @@
-export class ApiError extends Error {
-  status: number;
-  error: unknown;
-  sucess: boolean;
-  constructor(status: number, message: string) {
+class ApiError extends Error {
+  statusCode: number;
+  error: unknown[];
+
+  constructor(
+    statusCode: number,
+    message = "something went wrong",
+    error: unknown[] = []
+  ) {
     super(message);
-    this.status = status;
-    this.sucess = false;
+    this.statusCode = statusCode;
+    this.message = message;
+    this.error = error;
   }
 }
+
+export { ApiError };
