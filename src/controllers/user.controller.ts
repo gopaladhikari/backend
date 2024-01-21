@@ -1,3 +1,4 @@
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -15,6 +16,8 @@ const options = {
 interface RequestWithUser extends Request {
   user?: IUser;
 }
+
+const { REFRESH_TOKEN_SECRET } = process.env;
 
 const generateAccessAndRefreshToken = async (id: string) => {
   const user = await User.findById(id);
@@ -117,4 +120,36 @@ const logoutUser = dbHandler(async (req: RequestWithUser, res) => {
     .json(new ApiResponse(200, "Logout successful", { user }));
 });
 
-export { registerUser, loginUser, logoutUser };
+const refreshAccessToken = dbHandler(async (req, res) => {
+  const incomingRefreshToken =
+    req.cookies.refreshToken || req.body.refreshToken;
+
+  const decodedRefreshToken = jwt.verify(
+    incomingRefreshToken,
+    REFRESH_TOKEN_SECRET!
+  ) as JwtPayload;
+
+  const user = await User.findById(decodedRefreshToken._id).select("-password");
+
+  if (!user) throw new ApiError(400, "User not found");
+
+  if (user.refreshToken !== incomingRefreshToken)
+    throw new ApiError(400, "Invalid refresh token");
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    user._id
+  );
+
+  res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(200, "Refresh successful", {
+        accessToken,
+        refreshToken,
+      })
+    );
+});
+
+export { registerUser, loginUser, logoutUser, refreshAccessToken };
