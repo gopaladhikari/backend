@@ -5,11 +5,16 @@ import { dbHandler } from "../utils/dbHandler.js";
 import { registerSchema } from "../schema/register.schema.js";
 import { LoginUser, RegisterUser } from "./controller.js";
 import { loginSchema } from "../schema/login.schema.js";
+import { IUser } from "../models/model.js";
 
 const options = {
   httpOnly: true,
   secure: true,
 };
+
+interface RequestWithUser extends Request {
+  user?: IUser;
+}
 
 const generateAccessAndRefreshToken = async (id: string) => {
   const user = await User.findById(id);
@@ -79,7 +84,9 @@ const loginUser = dbHandler(async (req, res) => {
     existedUser._id
   );
 
-  const loginedUser = await User.findById(existedUser._id).select("-password");
+  const loginedUser = await User.findById(existedUser._id).select(
+    "-password -refreshToken"
+  );
   res
     .status(200)
     .cookie("refreshToken", refreshToken, options)
@@ -93,4 +100,21 @@ const loginUser = dbHandler(async (req, res) => {
     );
 });
 
-export { registerUser, loginUser };
+// @ts-expect-error-ignore
+const logoutUser = dbHandler(async (req: RequestWithUser, res) => {
+  const { _id } = req.user!;
+
+  const user = await User.findByIdAndUpdate(_id, {
+    $unset: { refreshToken: 1 },
+  }).select("-password -refreshToken");
+
+  if (!user) throw new ApiError(400, "User not found");
+
+  res
+    .status(200)
+    .clearCookie("refreshToken")
+    .clearCookie("accessToken")
+    .json(new ApiResponse(200, "Logout successful", { user }));
+});
+
+export { registerUser, loginUser, logoutUser };
