@@ -9,3 +9,9 @@ export interface LoginUser {
   email: string;
   password: string;
 }
+
+export interface UserDetails {
+  firstName: string;
+  lastName: string;
+  email: string;
+}

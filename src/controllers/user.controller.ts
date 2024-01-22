@@ -4,10 +4,11 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { dbHandler } from "../utils/dbHandler.js";
 import { registerSchema } from "../schema/register.schema.js";
-import { LoginUser, RegisterUser } from "./controller.js";
+import { LoginUser, RegisterUser, UserDetails } from "./controller.js";
 import { loginSchema } from "../schema/login.schema.js";
 import { passwordChangeSchema } from "../schema/passwordChange.schema.js";
 import { RequestWithUser } from "../models/model.js";
+import { updateUserSchema } from "../schema/updateUserDetail.schema.js";
 
 const options = {
   httpOnly: true,
@@ -175,10 +176,43 @@ const updatePassword = dbHandler(async (req: RequestWithUser, res) => {
     .json(new ApiResponse(200, "Password updated successfully", user));
 });
 
+const updateUserDetails = dbHandler(async (req: RequestWithUser, res) => {
+  const id = req.user?._id;
+  const details: UserDetails = req.body;
+  const result = updateUserSchema.safeParse(details);
+
+  if (result.success === false) {
+    const errors = result.error.issues.map((issue) => ({
+      field: issue.path.join("."),
+      message: issue.message,
+    }));
+    throw new ApiError(400, "Validation Error", errors);
+  }
+
+  const user = await User.findByIdAndUpdate(
+    id,
+    {
+      $set: { ...details },
+    },
+    { new: true }
+  ).select("-password -refreshToken");
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "User details updated successfully", user));
+});
+
+const getCurrentUser = dbHandler(async (req: RequestWithUser, res) => {
+  const user = req.user;
+  res.status(200).json(new ApiResponse(200, "User found", { user }));
+});
+
 export {
   registerUser,
   loginUser,
   logoutUser,
   refreshAccessToken,
   updatePassword,
+  updateUserDetails,
+  getCurrentUser,
 };

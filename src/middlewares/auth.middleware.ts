@@ -1,8 +1,8 @@
 import { Request } from "express";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { dbHandler } from "../utils/dbHandler.js";
-import jwt, { JwtPayload } from "jsonwebtoken";
 import { IUser } from "../models/model.js";
 
 const { ACCESS_TOKEN_SECRET } = process.env;
@@ -16,7 +16,7 @@ export const verifyJwt = dbHandler(async (req: CustomRequest, res, next) => {
     req.cookies["accessToken"] ||
     req.headers.authorization?.replace("Bearer ", "");
 
-  if (!incomingAccessToken) throw new ApiError(400, "Access token not found");
+  if (!incomingAccessToken) throw new ApiError(400, "Unauthorized request");
 
   const decodedToken = jwt.verify(
     incomingAccessToken,
