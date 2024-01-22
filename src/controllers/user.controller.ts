@@ -6,16 +6,13 @@ import { dbHandler } from "../utils/dbHandler.js";
 import { registerSchema } from "../schema/register.schema.js";
 import { LoginUser, RegisterUser } from "./controller.js";
 import { loginSchema } from "../schema/login.schema.js";
-import { IUser } from "../models/model.js";
+import { passwordChangeSchema } from "../schema/passwordChange.schema.js";
+import { RequestWithUser } from "../models/model.js";
 
 const options = {
   httpOnly: true,
   secure: true,
 };
-
-interface RequestWithUser extends Request {
-  user?: IUser;
-}
 
 const { REFRESH_TOKEN_SECRET } = process.env;
 
@@ -103,7 +100,6 @@ const loginUser = dbHandler(async (req, res) => {
     );
 });
 
-// @ts-expect-error-ignore
 const logoutUser = dbHandler(async (req: RequestWithUser, res) => {
   const { _id } = req.user!;
 
@@ -152,4 +148,37 @@ const refreshAccessToken = dbHandler(async (req, res) => {
     );
 });
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+const updatePassword = dbHandler(async (req: RequestWithUser, res) => {
+  const id = req.user?._id;
+  const passwords = req.body;
+  const result = passwordChangeSchema.safeParse(passwords);
+  if (result.success === false) {
+    const errors = result.error.issues.map((issue) => ({
+      field: issue.path.join("."),
+      message: issue.message,
+    }));
+
+    throw new ApiError(400, "Validation Error", errors);
+  }
+
+  const user = await User.findById(id).select("-password -refreshToken");
+  if (!user) throw new ApiError(400, "User not found");
+
+  const isPasswordCorrect = user.isPasswordCorrect(passwords.oldPassword);
+
+  if (!isPasswordCorrect) throw new ApiError(400, "Incorrect password");
+
+  user.password = passwords.newPassword;
+  await user.save({ validateBeforeSave: false });
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Password updated successfully", user));
+});
+
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  updatePassword,
+};

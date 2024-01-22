@@ -1,4 +1,5 @@
 import { Document } from "mongoose";
+import { Request } from "express";
 
 export interface IUser extends Document {
   firstName: string;
@@ -9,4 +10,8 @@ export interface IUser extends Document {
   isPasswordCorrect(password: string): Promise<boolean>;
   generateAccessToken(): string;
   generateRefreshToken(): string;
+}
+
+export interface RequestWithUser extends Request {
+  user?: IUser;
 }
