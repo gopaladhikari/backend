@@ -15,3 +15,8 @@ export interface IUser extends Document {
 export interface RequestWithUser extends Request {
   user?: IUser;
 }
+
+export interface ISubscription extends Document {
+  channel: string;
+  subscriber: string;
+}

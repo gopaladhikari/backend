@@ -207,6 +207,67 @@ const getCurrentUser = dbHandler(async (req: RequestWithUser, res) => {
   res.status(200).json(new ApiResponse(200, "User found", { user }));
 });
 
+const getUserChannelProfile = dbHandler(async (req: RequestWithUser, res) => {
+  const { email } = req.params;
+
+  if (!email?.trim()) throw new ApiError(400, "Invalid email");
+
+  const channel = await User.aggregate([
+    {
+      $match: {
+        email: email?.toLowerCase(),
+      },
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "channel",
+        as: "subscribers",
+      },
+    },
+    {
+      $lookup: {
+        from: "subscriptions",
+        localField: "_id",
+        foreignField: "subscribers",
+        as: "subscribedTo",
+      },
+    },
+    {
+      $addFields: {
+        subscribersCount: {
+          $size: "$subscribers",
+        },
+        subscribedToCount: {
+          $size: "$subscribedTo",
+        },
+        isSubscribed: {
+          $condition: {
+            if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+            then: true,
+            else: false,
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        firstName: 1,
+        lastName: 1,
+        email: 1,
+        subscribersCount: 1,
+        subscribedToCount: 1,
+      },
+    },
+  ]);
+
+  if (channel.length) throw new ApiError(404, "Channel does't exist");
+
+  console.log(channel);
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "User Channel fetched sucessfully", channel[0]));
+});
+
 export {
   registerUser,
   loginUser,
@@ -215,4 +276,5 @@ export {
   updatePassword,
   updateUserDetails,
   getCurrentUser,
+  getUserChannelProfile,
 };

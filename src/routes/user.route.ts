@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getCurrentUser,
+  getUserChannelProfile,
   loginUser,
   logoutUser,
   refreshAccessToken,
@@ -20,9 +21,10 @@ userRouter.route("/refresh-access-token").post(refreshAccessToken);
 import { verifyJwt } from "../middlewares/auth.middleware.js";
 
 // secured routes
+userRouter.route("/get-current-user").get(verifyJwt, getCurrentUser);
+userRouter.route("/channel/:email").get(verifyJwt, getUserChannelProfile);
+userRouter.route("/update-user-details").patch(verifyJwt, updateUserDetails);
 userRouter.route("/logout").post(verifyJwt, logoutUser);
 userRouter.route("/update-password").post(verifyJwt, updatePassword);
-userRouter.route("/update-user-details").post(verifyJwt, updateUserDetails);
-userRouter.route("/get-current-user").get(verifyJwt, getCurrentUser);
 
 export { userRouter };
