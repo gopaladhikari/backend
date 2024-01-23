@@ -13,12 +13,21 @@ import {
 const userRouter = express.Router();
 
 // routes
-userRouter.route("/register").post(registerUser);
+userRouter.route("/register").post(
+  upload.fields([
+    {
+      name: "avatar",
+      maxCount: 1,
+    },
+  ]),
+  registerUser
+);
 userRouter.route("/login").post(loginUser);
 userRouter.route("/refresh-access-token").post(refreshAccessToken);
 
 // auth check middlware
 import { verifyJwt } from "../middlewares/auth.middleware.js";
+import { upload } from "../middlewares/multer.middleware.js";
 
 // secured routes
 userRouter.route("/get-current-user").get(verifyJwt, getCurrentUser);

@@ -9,6 +9,7 @@ import { loginSchema } from "../schema/login.schema.js";
 import { passwordChangeSchema } from "../schema/passwordChange.schema.js";
 import { RequestWithUser } from "../models/model.js";
 import { updateUserSchema } from "../schema/updateUserDetail.schema.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const options = {
   httpOnly: true,
@@ -40,7 +41,7 @@ const registerUser = dbHandler(async (req, res) => {
       message: issue.message,
     }));
 
-    throw new ApiError(400, "Validation Error", errors);
+    throw new ApiError(400, "Validation Error gopal", errors);
   }
 
   const existedUser = await User.findOne({ email: userData.email });
@@ -48,7 +49,16 @@ const registerUser = dbHandler(async (req, res) => {
   if (existedUser)
     throw new ApiError(409, "User already exist with this email.");
 
-  const user = await User.create(userData);
+  // @ts-expect-error unhandled error
+  const avatarFile = req.files?.avatar[0]?.path;
+
+  if (!avatarFile) throw new ApiError(400, "Avatar not found");
+
+  const avatar = await uploadOnCloudinary(avatarFile);
+
+  if (!avatar) throw new ApiError(400, "Avatar not uploaded");
+
+  const user = await User.create({ ...userData, avatar: avatar.url });
 
   const createdUser = await User.findById(user._id).select("-password");
 

@@ -19,7 +19,7 @@ app.use(express.static("public"));
 
 // import routess
 
-import { userRouter } from "../routes/user.route.js";
+import { userRouter } from "./routes/user.route.js";
 
 // declaration
 
