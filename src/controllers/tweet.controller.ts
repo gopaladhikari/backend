@@ -67,7 +67,17 @@ const updateTweet = dbHandler(async (req, res) => {
 });
 
 const deleteTweet = dbHandler(async (req, res) => {
-  //TODO: delete tweet
+  const { tweetId } = req.params;
+  if (!isValidObjectId(tweetId)) throw new ApiError(400, "Invalid tweed id");
+
+  const deletedTweet = await Tweet.findByIdAndDelete(tweetId);
+  if (!deletedTweet) throw new ApiError(400, "Tweet not found");
+
+  res.status(200).json(
+    new ApiResponse(200, "Tweet deleted successfully", {
+      tweet: deletedTweet,
+    })
+  );
 });
 
 export { createTweet, getUserTweets, updateTweet, deleteTweet };
