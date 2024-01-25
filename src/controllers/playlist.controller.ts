@@ -1,26 +1,51 @@
 import mongoose, { isValidObjectId } from "mongoose";
-import { Like } from "../models/like.model.js";
+import { Playlist } from "../models/playlist.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { dbHandler } from "../utils/dbHandler.js";
 
-const toggleVideoLike = asyncHandler(async (req, res) => {
-  const { videoId } = req.params;
-  //TODO: toggle like on video
+const createPlaylist = dbHandler(async (req, res) => {
+  const { name, description } = req.body;
+
+  //TODO: create playlist
 });
 
-const toggleCommentLike = asyncHandler(async (req, res) => {
-  const { commentId } = req.params;
-  //TODO: toggle like on comment
+const getUserPlaylists = dbHandler(async (req, res) => {
+  const { userId } = req.params;
+  //TODO: get user playlists
 });
 
-const toggleTweetLike = asyncHandler(async (req, res) => {
-  const { tweetId } = req.params;
-  //TODO: toggle like on tweet
+const getPlaylistById = dbHandler(async (req, res) => {
+  const { playlistId } = req.params;
+  //TODO: get playlist by id
 });
 
-const getLikedVideos = asyncHandler(async (req, res) => {
-  //TODO: get all liked videos
+const addVideoToPlaylist = dbHandler(async (req, res) => {
+  const { playlistId, videoId } = req.params;
 });
 
-export { toggleCommentLike, toggleTweetLike, toggleVideoLike, getLikedVideos };
+const removeVideoFromPlaylist = dbHandler(async (req, res) => {
+  const { playlistId, videoId } = req.params;
+  // TODO: remove video from playlist
+});
+
+const deletePlaylist = dbHandler(async (req, res) => {
+  const { playlistId } = req.params;
+  // TODO: delete playlist
+});
+
+const updatePlaylist = dbHandler(async (req, res) => {
+  const { playlistId } = req.params;
+  const { name, description } = req.body;
+  //TODO: update playlist
+});
+
+export {
+  createPlaylist,
+  getUserPlaylists,
+  getPlaylistById,
+  addVideoToPlaylist,
+  removeVideoFromPlaylist,
+  deletePlaylist,
+  updatePlaylist,
+};

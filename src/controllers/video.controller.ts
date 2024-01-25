@@ -1,25 +1,45 @@
-import mongoose from "mongoose";
-import { Comment } from "../models/comment.model.js";
+import mongoose, { isValidObjectId } from "mongoose";
+import { Video } from "../models/video.model.js";
+import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { dbHandler } from "../utils/dbHandler.js";
 
-const getVideoComments = dbHandler(async (req, res) => {
-  //TODO: get all comments for a video
+const getAllVideos = dbHandler(async (req, res) => {
+  const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query;
+  //TODO: get all videos based on query, sort, pagination
+});
+
+const publishAVideo = dbHandler(async (req, res) => {
+  const { title, description } = req.body;
+  // TODO: get video, upload to cloudinary, create video
+});
+
+const getVideoById = dbHandler(async (req, res) => {
   const { videoId } = req.params;
-  const { page = 1, limit = 10 } = req.query;
+  //TODO: get video by id
 });
 
-const addComment = dbHandler(async (req, res) => {
-  // TODO: add a comment to a video
+const updateVideo = dbHandler(async (req, res) => {
+  const { videoId } = req.params;
+  //TODO: update video details like title, description, thumbnail
 });
 
-const updateComment = dbHandler(async (req, res) => {
-  // TODO: update a comment
+const deleteVideo = dbHandler(async (req, res) => {
+  const { videoId } = req.params;
+  //TODO: delete video
 });
 
-const deleteComment = dbHandler(async (req, res) => {
-  // TODO: delete a comment
+const togglePublishStatus = dbHandler(async (req, res) => {
+  const { videoId } = req.params;
 });
 
-export { getVideoComments, addComment, updateComment, deleteComment };
+export {
+  getAllVideos,
+  publishAVideo,
+  getVideoById,
+  updateVideo,
+  deleteVideo,
+  togglePublishStatus,
+};
