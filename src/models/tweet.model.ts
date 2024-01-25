@@ -4,8 +4,8 @@ import { ITweet } from "./model.js";
 const tweetSchema = new Schema(
   {
     content: {
-      type: Schema.Types.ObjectId,
-      ref: "Comment",
+      type: String,
+      required: true,
     },
 
     owner: {
