@@ -122,8 +122,8 @@ const logoutUser = dbHandler(async (req: RequestWithUser, res) => {
 
   res
     .status(200)
-    .clearCookie("refreshToken")
-    .clearCookie("accessToken")
+    .clearCookie("refreshToken", options)
+    .clearCookie("accessToken", options)
     .json(new ApiResponse(200, "Logout successful", { user }));
 });
 
