@@ -23,11 +23,7 @@ const addComment = dbHandler(async (req: RequestWithUser, res) => {
   const user = req.user;
   if (!user) throw new ApiError(400, "User not found");
 
-  const comment = await Comment.create({
-    content,
-    videoId,
-    owner: user._id,
-  });
+  const comment = await Comment.create({ content, videoId, owner: user._id });
 
   const createdComment = await Comment.findById(comment._id);
 
@@ -50,11 +46,7 @@ const updateComment = dbHandler(async (req, res) => {
 
   const updatedComment = await Comment.findByIdAndUpdate(
     commentId,
-    {
-      $set: {
-        content,
-      },
-    },
+    { $set: { content } },
     { new: true }
   );
   if (!updatedComment) throw new ApiError(400, "Comment not found");
@@ -68,7 +60,7 @@ const updateComment = dbHandler(async (req, res) => {
 
 const deleteComment = dbHandler(async (req, res) => {
   // TODO: delete a comment
-  const { commentId } = req.body;
+  const { commentId } = req.params;
 
   if (!commentId) throw new ApiError(400, "Comment id is required");
 
