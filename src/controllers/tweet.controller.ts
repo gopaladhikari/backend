@@ -49,11 +49,7 @@ const updateTweet = dbHandler(async (req, res) => {
 
   const updatedTweet = await Tweet.findByIdAndUpdate(
     tweetId,
-    {
-      $set: {
-        content,
-      },
-    },
+    { $set: { content } },
     { new: true }
   );
 

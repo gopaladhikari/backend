@@ -3,12 +3,37 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { dbHandler } from "../utils/dbHandler.js";
 import { RequestWithUser } from "../models/model.js";
-import { isValidObjectId } from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 
 const getVideoComments = dbHandler(async (req, res) => {
   //TODO: get all comments for a video
   const { videoId } = req.params;
-  const { page = 1, limit = 10 } = req.query;
+  let { page = 1, limit = 10 } = req.query;
+
+  page = Number(page) || 1;
+  limit = Number(limit) || 10;
+
+  const comments = await Comment.aggregate([
+    {
+      $match: {
+        videoId: new mongoose.Types.ObjectId(videoId),
+      },
+    },
+    {
+      $skip: (page - 1) * limit,
+    },
+    {
+      $limit: limit,
+    },
+  ]);
+
+  if (!comments) throw new ApiError(404, "Comments not found");
+
+  res.status(200).json(
+    new ApiResponse(200, "Comments found successfully", {
+      comments,
+    })
+  );
 });
 
 const addComment = dbHandler(async (req: RequestWithUser, res) => {
