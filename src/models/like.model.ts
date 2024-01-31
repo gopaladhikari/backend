@@ -3,6 +3,10 @@ import { ILike } from "./model.js";
 
 const likeSchema = new Schema(
   {
+    video: {
+      type: Schema.Types.ObjectId,
+      ref: "Video",
+    },
     comment: {
       type: Schema.Types.ObjectId,
       ref: "Comment",
@@ -11,9 +15,10 @@ const likeSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Tweet",
     },
-    owner: {
+    likedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
   },
   {

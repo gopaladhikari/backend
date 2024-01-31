@@ -28,9 +28,10 @@ export interface IComment extends Document {
 }
 
 export interface ILike extends Document {
+  video: string;
   comment: string;
   tweet: string;
-  owner: string;
+  likedBy: string;
 }
 
 export interface IPlaylist extends Document {
