@@ -1,7 +1,7 @@
 import { serve } from "bun";
 
 const server = serve({
-	port: 3000,
+	port: 3001,
 	hostname: "localhost",
 	fetch(req) {
 		if (req.method !== "GET")
